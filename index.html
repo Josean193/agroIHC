@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tienda de Agroquímicos</title>
+  <style>
+    /* -------------------------------------
+       1) RESET BÁSICO Y ESTILOS GENERALES
+    ------------------------------------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      color: #333;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* -------------------------------------
+       2) BARRA SUPERIOR (NO FIJA)
+    ------------------------------------- */
+    .top-bar {
+      background-color: #2A2E8A;
+      color: #FFF;
+      padding: 5px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    .top-bar .left,
+    .top-bar .right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .top-bar .icon {
+      margin-right: 5px;
+    }
+
+    /* -------------------------------------
+       ÍCONO DE CARRITO FIJO
+       (más grande y más abajo)
+    ------------------------------------- */
+    .carrito-container {
+      position: fixed;
+      top: 200px;  /* Ajusta la altura según tu preferencia */
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .icon-carrito {
+      width: 80px;  
+      height: 80px;
+      object-fit: contain;
+    }
+    .cart-count {
+      background-color: #ff5722;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 50%;
+      padding: 4px 10px;
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-weight: bold;
+    }
+    @keyframes shakeCart {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-2px, 0); }
+      40% { transform: translate(2px, 0); }
+      60% { transform: translate(-2px, 0); }
+      80% { transform: translate(2px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+
+    /* -------------------------------------
+       3) ENCABEZADO PRINCIPAL (LOGO, MENÚ, BÚSQUEDA)
+    ------------------------------------- */
+    header {
+      background-color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .logo img {
+      max-height: 50px;
+    }
+    .main-nav {
+      list-style: none;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+    .main-nav > li {
+      position: relative;
+    }
+    .main-nav a {
+      font-size: 16px;
+      padding: 8px 0;
+      color: #444;
+      display: block;
+      font-weight: 500;
+    }
+    .submenu {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      min-width: 140px;
+      list-style: none;
+      display: none;
+      z-index: 999;
+    }
+    .submenu li {
+      border-bottom: 1px solid #eee;
+    }
+    .submenu li:last-child {
+      border-bottom: none;
+    }
+    .main-nav li:hover > .submenu {
+      display: block;
+    }
+    .submenu a {
+      padding: 8px;
+      color: #333;
+    }
+    .submenu a:hover {
+      background-color: #f2f2f2;
+      color: #009929;
+    }
+    .search-container {
+      display: flex;
+      align-items: center;
+      border: 1px solid #999;
+      padding: 5px;
+    }
+    .search-container input {
+      border: none;
+      outline: none;
+      padding: 5px;
+      font-size: 14px;
+    }
+    .search-container button {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* -------------------------------------
+       4) BOTONES (HOVER)
+    ------------------------------------- */
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #2A2E8A;
+      color: #FFF;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin: 5px 0;
+    }
+    .btn:hover {
+      background-color: #009929;
+    }
+
+    /* -------------------------------------
+       5) SECCIÓN HERO con CARRUSEL
+    ------------------------------------- */
+    .hero-carousel {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      overflow: hidden;
+    }
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease;
+      width: 100%;
+      height: 100%;
+    }
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+    .slide-1 { background-image: url('alfa.jpg'); }
+    .slide-2 { background-image: url('lechu.jpg'); }
+    .slide-3 { background-image: url('espi.jpg'); }
+    .slide-4 { background-image: url('cila.jpg'); }
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .carousel-btn:hover {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    .prev-btn {
+      left: 10px;
+    }
+    .next-btn {
+      right: 10px;
+    }
+    .hero-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      text-align: center;
+      max-width: 600px;
+      z-index: 2;
+    }
+    .hero-content h1 {
+      font-size: 40px;
+      margin-bottom: 15px;
+      font-weight: bold;
+      line-height: 1.2;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    }
+    .hero-content p.subtitulo-hero {
+      font-size: 18px;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    }
+    .mensaje-bienvenida {
+      font-style: italic;
+      font-size: 16px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    }
+
+    /* -------------------------------------
+       6) SECCIÓN PRODUCTOS GENERALES
+       (IMAGEN, NOMBRE, BOTONES)
+    ------------------------------------- */
+    .productos-generales {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 30px 20px;
+      gap: 20px;
+    }
+    .producto-general {
+      width: 300px;
+      background-color: #FFF;
+      border: 1px solid #eee;
+      border-radius: 5px;
+      padding: 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      text-align: center;
+      position: relative;
+      overflow: visible;
+      transition: transform 0.3s ease;
+    }
+    .producto-general:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .producto-general img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .producto-general h2 {
+      color: #2E7D32;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .tooltip-general {
+      visibility: hidden;
+      opacity: 0;
+      width: 80%;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 5px;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-50%, -110%);
+      transition: opacity 0.3s ease;
+      font-size: 12px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .producto-general:hover .tooltip-general {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* -------------------------------------
+       7) GALERÍA DE PRODUCTOS (OPCIONAL)
+    ------------------------------------- */
+    .productos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin: 0 20px 40px;
+    }
+    .producto-card {
+      width: 220px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+      background-color: #FFF;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .producto-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .producto-imagen {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      background-color: #f0f0f0;
+    }
+    .producto-info {
+      padding: 10px;
+    }
+    .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      width: 80%;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 5px;
+      position: absolute;
+      left: 10%;
+      bottom: 50px;
+      transition: opacity 0.3s ease;
+      font-size: 12px;
+      z-index: 10;
+    }
+    .producto-card:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    .descuento-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #009929;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: bold;
+      animation: latido 1s infinite alternate;
+    }
+    @keyframes latido {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.2); }
+    }
+
+    /* -------------------------------------
+       8) PIE DE PÁGINA
+    ------------------------------------- */
+    footer {
+      background-color: #F0F0F0;
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR (NO FIJA) -->
+  <div class="top-bar">
+    <div class="left">
+      <div class="servicio-cliente">
+        <span class="icon">👤</span> 
+        <span>Jose Eduardo Vera Octaviano</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="telefono">
+        <span class="icon">📞</span>
+        <span>TI44990</span>
+      </div>
+      <div class="correo">
+        <span class="icon">✉️</span>
+        <span>TI44990@uvp.edu.mx</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÍCONO DEL CARRITO (POSICIÓN FIJA, top: 200px, icon 80x80) -->
+  <div class="carrito-container" id="carritoContainer">
+    <a href="carrito.html" style="text-decoration:none; color:inherit;">
+      <img src="carro.png" alt="Carrito" class="icon-carrito" id="cartIcon">
+      <span class="cart-count" id="cartCount">0</span>
+    </a>
+  </div>
+
+  <!-- ENCABEZADO PRINCIPAL -->
+  <header>
+    <div class="logo">
+      <a href="index.html">
+        <img src="logo.jpg" alt="Logo Tienda Agroquímicos">
+      </a>
+    </div>
+    <nav>
+      <ul class="main-nav">
+        <!-- Enlaces actualizados -->
+        <li><a href="index.html">Inicio</a></li>
+        <li>
+          <a href="semillas.html">Semillas</a>
+          <ul class="submenu">
+            <li><a href="sandia.html">Sandia</a></li>
+            <li><a href="calabaza.html">Calabaza</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="quimicos.html">Químicos</a>
+          <ul class="submenu">
+            <li><a href="insecticida.html">Insecticidas</a></li>
+            <li><a href="fungicida.html">Fungicidas</a></li>
+            <li><a href="herbicida.html">Herbicidas</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="servicios.html">Servicios</a>
+          <ul class="submenu">
+            <li><a href="contacto.html">Contacto</a></li>
+            <li><a href="cotizaciones.html">Cotizaciones</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+    <div class="search-container">
+      <input type="text" placeholder="BUSCAR">
+      <button type="submit">🔎</button>
+    </div>
+  </header>
+
+  <!-- HERO con CARRUSEL -->
+  <section class="hero-carousel">
+    <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-slide slide-1"></div>
+      <div class="carousel-slide slide-2"></div>
+      <div class="carousel-slide slide-3"></div>
+      <div class="carousel-slide slide-4"></div>
+    </div>
+    <button class="carousel-btn prev-btn" id="prevBtn">&#10094;</button>
+    <button class="carousel-btn next-btn" id="nextBtn">&#10095;</button>
+
+    <div class="hero-content">
+      <h1>Hola Ingeniero</h1>
+      <p class="subtitulo-hero">
+        Todo lo que necesitas para tus cultivos y asesoría especializada.
+      </p>
+      <div class="mensaje-bienvenida" id="mensaje-bienvenida"></div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE PRODUCTOS GENERALES -->
+  <section class="productos-generales">
+    <!-- Producto 1 -->
+    <div class="producto-general">
+      <img src="her.jpg" alt="Producto General 1">
+      <h2>Producto General 1</h2>
+      <button class="btn">Ver más</button>
+      <button class="btn add-to-cart-btn">Agregar al carrito</button>
+      <div class="tooltip-general">
+        Información detallada de <strong>Producto General 1</strong>.
+      </div>
+    </div>
+
+    <!-- Producto 2 -->
+    <div class="producto-general">
+      <img src="insect.jpg" alt="Producto General 2">
+      <h2>Producto General 2</h2>
+      <button class="btn">Ver más</button>
+      <button class="btn add-to-cart-btn">Agregar al carrito</button>
+      <div class="tooltip-general">
+        Información detallada de <strong>Producto General 2</strong>.
+      </div>
+    </div>
+
+    <!-- Producto 3 -->
+    <div class="producto-general">
+      <img src="sandia1.jpg" alt="Producto General 3">
+      <h2>Producto General 3</h2>
+      <button class="btn">Ver más</button>
+      <button class="btn add-to-cart-btn">Agregar al carrito</button>
+      <div class="tooltip-general">
+        Información detallada de <strong>Producto General 3</strong>.
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERÍA DE PRODUCTOS (OPCIONAL) -->
+  <section class="productos">
+    <div class="producto-card">
+      <img class="producto-imagen" src="sandia.jpg" alt="Sandía">
+      <div class="producto-info">
+        <h4>Sandía</h4>
+        <p>$150.00</p>
+      </div>
+      <div class="tooltip">Información detallada de la sandía.</div>
+      <div class="descuento-badge">-10%</div>
+    </div>
+    <div class="producto-card">
+      <img class="producto-imagen" src="herbi.jpg" alt="Herbicida">
+      <div class="producto-info">
+        <h4>Herbicida</h4>
+        <p>$90.00</p>
+      </div>
+      <div class="tooltip">Detalles del herbicida.</div>
+      <div class="descuento-badge">-15%</div>
+    </div>
+    <div class="producto-card">
+      <img class="producto-imagen" src="fungi.jpg" alt="Fungicida">
+      <div class="producto-info">
+        <h4>Fungicida</h4>
+        <p>$85.00</p>
+      </div>
+      <div class="tooltip">Detalles del fungicida.</div>
+      <div class="descuento-badge">-8%</div>
+    </div>
+    <div class="producto-card">
+      <img class="producto-imagen" src="cala.jpg" alt="Calabaza">
+      <div class="producto-info">
+        <h4>Calabaza</h4>
+        <p>$120.00</p>
+      </div>
+      <div class="tooltip">Recomendaciones de siembra para calabaza.</div>
+      <div class="descuento-badge">-5%</div>
+    </div>
+  </section>
+
+  <!-- PIE DE PÁGINA -->
+  <footer>
+    <p>&copy; 2025 Tienda de Agroquímicos. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- SCRIPT 1: MENSAJE DE BIENVENIDA -->
+  <script>
+    window.addEventListener('load', function() {
+      const date = new Date();
+      const hour = date.getHours();
+      let greeting;
+
+      if (hour < 12) {
+        greeting = "¡Buenos días!";
+      } else if (hour < 19) {
+        greeting = "¡Buenas tardes!";
+      } else {
+        greeting = "¡Buenas noches!";
+      }
+
+      const opcionesFecha = { year: 'numeric', month: 'numeric', day: 'numeric' };
+      const opcionesHora = { hour: '2-digit', minute: '2-digit' };
+
+      const fechaFormateada = date.toLocaleDateString('es-ES', opcionesFecha);
+      const horaFormateada = date.toLocaleTimeString('es-ES', opcionesHora);
+
+      const mensajeCompleto = `${greeting} Hoy es ${fechaFormateada}, y son las ${horaFormateada}.`;
+      document.getElementById('mensaje-bienvenida').textContent = mensajeCompleto;
+    });
+  </script>
+
+  <!-- SCRIPT 2: CARRUSEL DE IMÁGENES -->
+  <script>
+    const track = document.getElementById('carouselTrack');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slides = Array.from(track.children);
+    let currentIndex = 0; 
+
+    function updateSlidePosition() {
+      track.style.transform = `translateX(-${100 * currentIndex}%)`;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex++;
+      if (currentIndex >= slides.length) {
+        currentIndex = 0;
+      }
+      updateSlidePosition();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex--;
+      if (currentIndex < 0) {
+        currentIndex = slides.length - 1;
+      }
+      updateSlidePosition();
+    });
+
+    // Auto-play cada 4 seg
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % slides.length;
+      updateSlidePosition();
+    }, 4000);
+  </script>
+
+  <!-- SCRIPT 3: Agregar al Carrito (con localStorage) -->
+  <script>
+    // 1) Recuperar el carrito de localStorage, si existe
+    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+    // 2) Actualizar el contador del carrito al cargar la página
+    const cartCount = document.getElementById('cartCount');
+    cartCount.textContent = carrito.length; // Se muestra la cantidad de productos
+
+    const cartIcon = document.getElementById('cartIcon');
+    const addCartButtons = document.querySelectorAll('.add-to-cart-btn');
+
+    // 3) Al hacer clic en "Agregar al carrito", guardar datos del producto
+    addCartButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const productoGeneral = this.closest('.producto-general');
+        const nombreProducto = productoGeneral.querySelector('h2').textContent;
+        const imagenProducto = productoGeneral.querySelector('img').src;
+
+        const nuevoProducto = {
+          nombre: nombreProducto,
+          imagen: imagenProducto
+        };
+
+        carrito.push(nuevoProducto);
+        localStorage.setItem('carrito', JSON.stringify(carrito));
+
+        cartCount.textContent = carrito.length;
+
+        // Animación de sacudida
+        cartIcon.style.animation = 'shakeCart 0.5s';
+        setTimeout(() => {
+          cartIcon.style.animation = '';
+        }, 500);
+      });
+    });
+  </script>
+
+</body>
+</html>
